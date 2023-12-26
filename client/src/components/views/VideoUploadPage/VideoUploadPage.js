@@ -4,6 +4,7 @@ import { Typography, Button, Form, message, Input, Icon } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import Dropzone from "react-dropzone";
 import Axios from 'axios';
+import { useSelector } from "react-redux";
 
 const { Title } = Typography;
 
@@ -20,6 +21,8 @@ const CategoryOptions = [
 ]
 
 function VideoUploadPage() {
+
+    const user = useSelector(state => state.user);      //리덕스에서 유저의 정보를 모두 가져온다
 
     const [VideoTitle, setVideoTitle] = useState("")
     const [Description, setDescription] = useState("")
@@ -83,13 +86,37 @@ function VideoUploadPage() {
             })
     }
 
+    const onSubmit = (e) => {
+        e.preventDefault();
+
+        const variables = {
+            writer: user.userData._id,
+            title: VideoTitle,
+            description: Description,
+            privacy: Private,
+            filePath: FilePath,
+            category: Category,
+            duration: Duration,
+            thumnail: ThumbnailPath
+        }
+
+        Axios.post('/api/video/uploadVideo', variables)
+        .then(response => {
+            if(response.data.success) {
+                console.log(response.data)
+            }else {
+                alert("비다오 업로드에 실패했습니다.")
+            }
+        })
+    }
+
     return (
         <div style={{ maxWidth: '700px', margin: '2rem auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                 <Title level={2}>Upload Video</Title>
             </div>
 
-            <Form onSubmit>
+            <Form onSubmit={onSubmit}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     {/* Drop Zone */}
 
@@ -146,7 +173,7 @@ function VideoUploadPage() {
                 </select>
                 <br/>
                 <br/>
-                <Button type="primary" size="large" onClick>
+                <Button type="primary" size="large" onClick={onSubmit}>
                     Submit
                 </Button>
                 <br/>
